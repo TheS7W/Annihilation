@@ -57,11 +57,11 @@ public class Boss {
         Chest c = (Chest) chest.getBlock().getState();
         Inventory inv = c.getBlockInventory();
         Random r = new Random();
-        inv.setItem(r.nextInt(36), getRandomItem(legendaries));
-        if (lootItems > 34)
-            lootItems = 34;
+        inv.setItem(r.nextInt(inv.getSize()), getRandomItem(legendaries));
+        if (lootItems > inv.getSize() - 2)
+            lootItems = inv.getSize() - 2;
         for (int i = 0; i < lootItems; i++) {
-            int slot = r.nextInt(36);
+            int slot = r.nextInt(inv.getSize());
             if (isEmpty(inv, slot))
                 inv.setItem(slot, getRandomItem(loot));
             else
