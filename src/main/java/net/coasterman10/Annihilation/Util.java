@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Random;
 
+import net.coasterman10.Annihilation.object.GameTeam;
 import net.coasterman10.Annihilation.object.Kit;
 import net.coasterman10.Annihilation.object.PlayerMeta;
 
@@ -360,5 +361,13 @@ public class Util {
         default:
             return ChatColor.WHITE.toString();
         }
+    }
+    
+    public static boolean isTeamTooBig(GameTeam team) {
+        int players = team.getPlayers().size();
+        for (GameTeam gt : GameTeam.teams())
+            if (players >= gt.getPlayers().size() + 3 && gt.getNexus().isAlive())
+                return true;
+        return false;
     }
 }

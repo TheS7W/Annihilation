@@ -68,28 +68,39 @@ public class TeamCommand implements CommandExecutor {
             return;
         }
 
+        if (Util.isTeamTooBig(target)
+                && !player.hasPermission("annihilation.team-limit-bypass")) {
+            player.sendMessage(ChatColor.RED
+                    + "That team is too big, join another team!");
+            return;
+        }
+
         if (target.getNexus() != null) {
             if (target.getNexus().getHealth() == 0 && plugin.getPhase() > 1) {
-                player.sendMessage(ChatColor.RED + "You cannot join a team without a Nexus!");
+                player.sendMessage(ChatColor.RED
+                        + "You cannot join a team without a Nexus!");
                 return;
             }
         }
-        
-        if (plugin.getPhase() > plugin.lastJoinPhase && !player.hasPermission("annhilation.bypass.phaselimiter")) {
-            player.sendMessage(ChatColor.RED + "You cannot join the game in this phase!");
+
+        if (plugin.getPhase() > plugin.lastJoinPhase
+                && !player.hasPermission("annhilation.bypass.phaselimiter")) {
+            player.sendMessage(ChatColor.RED
+                    + "You cannot join the game in this phase!");
             return;
         }
-        
+
         player.sendMessage(ChatColor.DARK_AQUA + "You joined "
                 + target.coloredName());
         meta.setTeam(target);
 
-        plugin.getScoreboardHandler().teams.get(team.toUpperCase()).addPlayer(player);
-        
+        plugin.getScoreboardHandler().teams.get(team.toUpperCase()).addPlayer(
+                player);
+
         if (plugin.getPhase() > 0) {
             Util.sendPlayerToGame(player, plugin);
         }
-        
+
         plugin.getSignHandler().updateSigns(GameTeam.RED);
         plugin.getSignHandler().updateSigns(GameTeam.BLUE);
         plugin.getSignHandler().updateSigns(GameTeam.GREEN);

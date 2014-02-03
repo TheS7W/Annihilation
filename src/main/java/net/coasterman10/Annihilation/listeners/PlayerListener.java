@@ -184,6 +184,15 @@ public class PlayerListener implements Listener {
                     GameTeam team = GameTeam.valueOf(teamName.toUpperCase());
                     if (team != null) {
                         if (pmeta.getTeam() == GameTeam.NONE) {
+
+                            if (Util.isTeamTooBig(team)
+                                    && !player
+                                            .hasPermission("annihilation.team-limit-bypass")) {
+                                player.sendMessage(ChatColor.RED
+                                        + "That team is too big, join another team!");
+                                return;
+                            }
+
                             if (team.getNexus() != null) {
                                 if (team.getNexus().getHealth() == 0
                                         && plugin.getPhase() > 1) {
