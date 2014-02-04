@@ -75,6 +75,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -569,5 +570,83 @@ public final class Annihilation extends JavaPlugin {
 
     public PhaseManager getPhaseManager() {
         return timer;
+    }
+
+    public void listTeams(CommandSender sender) {
+        sender.sendMessage(ChatColor.GRAY + "============[ "
+                + ChatColor.DARK_AQUA + "Teams" + ChatColor.GRAY
+                + " ]============");
+        for (GameTeam t : GameTeam.teams()) {
+            int size = 0;
+
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                PlayerMeta meta = PlayerMeta.getMeta(p);
+                if (meta.getTeam() == t)
+                    size++;
+            }
+
+            if (size != 1) {
+                sender.sendMessage(t.coloredName() + " - " + size + " players");
+            } else {
+                sender.sendMessage(t.coloredName() + " - " + size + " player");
+            }
+        }
+        sender.sendMessage(ChatColor.GRAY + "===============================");
+    }
+
+    public void joinTeam(Player player, String team) {
+        PlayerMeta meta = PlayerMeta.getMeta(player);
+        if (meta.getTeam() != GameTeam.NONE && !player.hasPermission("annihilation.bypass.teamlimitor")) {
+            player.sendMessage(ChatColor.DARK_AQUA + "You cannot switch teams!");
+            return;
+        }
+
+        GameTeam target;
+        try {
+            target = GameTeam.valueOf(team.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            player.sendMessage(ChatColor.RED + "\"" + team
+                    + "\" is not a valid team name!");
+            listTeams(player);
+            return;
+        }
+
+        if (Util.isTeamTooBig(target)
+                && !player.hasPermission("annihilation.bypass.teamlimit")) {
+            player.sendMessage(ChatColor.RED
+                    + "That team is too big, join another team!");
+            return;
+        }
+
+        if (target.getNexus() != null) {
+            if (target.getNexus().getHealth() == 0 && getPhase() > 1) {
+                player.sendMessage(ChatColor.RED
+                        + "You cannot join a team without a Nexus!");
+                return;
+            }
+        }
+
+        if (getPhase() > lastJoinPhase
+                && !player.hasPermission("annhilation.bypass.phaselimiter")) {
+            player.kickPlayer(ChatColor.RED
+                    + "You cannot join the game in this phase!");
+            return;
+        }
+
+        player.sendMessage(ChatColor.DARK_AQUA + "You joined "
+                + target.coloredName());
+        meta.setTeam(target);
+
+        getScoreboardHandler().teams.get(team.toUpperCase()).addPlayer(
+                player);
+
+        if (getPhase() > 0) {
+            Util.sendPlayerToGame(player, this);
+        }
+
+        getSignHandler().updateSigns(GameTeam.RED);
+        getSignHandler().updateSigns(GameTeam.BLUE);
+        getSignHandler().updateSigns(GameTeam.GREEN);
+        getSignHandler().updateSigns(GameTeam.YELLOW);
     }
 }

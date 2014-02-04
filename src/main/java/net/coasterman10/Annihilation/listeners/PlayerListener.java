@@ -188,46 +188,8 @@ public class PlayerListener implements Listener {
                     String teamName = ChatColor.stripColor(s.getLine(1));
                     GameTeam team = GameTeam.valueOf(teamName.toUpperCase());
                     if (team != null) {
-                        if (pmeta.getTeam() == GameTeam.NONE) {
-
-                            if (Util.isTeamTooBig(team)
-                                    && !player
-                                            .hasPermission("annihilation.team-limit-bypass")) {
-                                player.sendMessage(ChatColor.RED
-                                        + "That team is too big, join another team!");
-                                return;
-                            }
-
-                            if (team.getNexus() != null) {
-                                if (team.getNexus().getHealth() == 0
-                                        && plugin.getPhase() > 1) {
-                                    player.sendMessage(ChatColor.RED
-                                            + "You cannot join a team without a Nexus!");
-                                    return;
-                                }
-                            }
-
-                            if (plugin.getPhase() > plugin.lastJoinPhase
-                                    && !player
-                                            .hasPermission("annhilation.bypass.phaselimiter")) {
-                                player.kickPlayer(ChatColor.RED
-                                        + "You cannot join the game in this phase!");
-                                return;
-                            }
-
-                            pmeta.setTeam(team);
-                            plugin.getScoreboardHandler().teams
-                                    .get(team.name()).addPlayer(player);
-                            player.sendMessage(ChatColor.DARK_AQUA
-                                    + "You joined " + team.coloredName());
-                            if (plugin.getPhase() > 0)
-                                Util.sendPlayerToGame(player, plugin);
-                        } else {
-                            player.sendMessage(ChatColor.DARK_AQUA
-                                    + "You cannot switch teams!");
-                        }
-
-                        plugin.getSignHandler().updateSigns(team);
+                        if (pmeta.getTeam() == GameTeam.NONE)
+                            plugin.joinTeam(e.getPlayer(), teamName);
                     }
                 }
             }
