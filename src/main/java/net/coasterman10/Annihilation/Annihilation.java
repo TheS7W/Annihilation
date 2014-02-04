@@ -1,16 +1,16 @@
 /*******************************************************************************
  * Copyright 2014 stuntguy3000 (Luke Anderson) and coasterman10.
- *  
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -86,6 +86,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.Team;
+import org.mcstats.Metrics;
 
 public final class Annihilation extends JavaPlugin {
     private ConfigManager configManager;
@@ -110,7 +111,7 @@ public final class Annihilation extends JavaPlugin {
     public int build = 1;
     public int lastJoinPhase = 2;
     public int respawn = 10;
-    
+
     @Override
     public void onEnable() {
         try {
@@ -220,7 +221,7 @@ public final class Annihilation extends JavaPlugin {
                     + "UNIQUE KEY `username` (`username`) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;");
         } else
             db = new DatabaseManager(this);
-        
+
         if (getServer().getPluginManager().isPluginEnabled("Vault")) {
             VaultHooks.vault = true;
             if (!VaultHooks.instance().setupPermissions()) {
@@ -362,7 +363,7 @@ public final class Annihilation extends JavaPlugin {
                 }
             }
         }, 0L, 1200L);
-        
+
         getServer().getScheduler().runTaskTimer(this, new Runnable() {
             public void run() {
                 for (GameTeam t : GameTeam.values()) {

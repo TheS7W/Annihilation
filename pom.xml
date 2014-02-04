@@ -21,6 +21,10 @@
 			<id>gravity-repo</id>
 			<url>http://repo.gravitydevelopment.net</url>
 		</repository>
+		<repository>
+    		<id>mcstats-repo</id>
+    		<url>http://repo.mcstats.org/content/repositories/releases/</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -44,10 +48,14 @@
 			<artifactId>updater</artifactId>
 			<version>RELEASE</version>
 		</dependency>
+		<dependency>
+    		<groupId>org.mcstats.bukkit</groupId>
+    		<artifactId>metrics</artifactId>
+    		<version>LATEST</version>
+		</dependency>
 	</dependencies>
 
 	<build>
-		<finalName>${project.name}</finalName>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<resources>
 			<resource>
@@ -70,6 +78,27 @@
 					<file>${project.build.finalName}</file>
 				</configuration>
 			</plugin>
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>1.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <artifactSet>
+                        <includes>
+                            <include>net.gravitydevelopment.*</include>
+                            <include>org.mcstats.*</include>
+                        </includes>
+                    </artifactSet>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 </project>
