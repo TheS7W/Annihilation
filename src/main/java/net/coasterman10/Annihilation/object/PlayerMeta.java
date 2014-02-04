@@ -34,6 +34,10 @@ public class PlayerMeta {
             metaTable.put(username, new PlayerMeta());
         return metaTable.get(username);
     }
+    
+    public static void reset() {
+        metaTable.clear();
+    }
 
     private GameTeam team;
     private Kit kit;

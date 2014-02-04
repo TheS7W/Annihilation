@@ -469,6 +469,7 @@ public final class Annihilation extends JavaPlugin {
                 + " | " + ChatColor.GOLD + "/vote <name>");
         maps.reset();
         timer.reset();
+        PlayerMeta.reset();
         for (Player p : getServer().getOnlinePlayers()) {
             PlayerMeta.getMeta(p).setTeam(GameTeam.NONE);
             p.teleport(maps.getLobbySpawnPoint());
