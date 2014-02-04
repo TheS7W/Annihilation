@@ -15,7 +15,7 @@ MySQL:
     user: mc_
     pass: mc_
     host: localhost
-    name: mc_
+    name: annihilation
     
 # Display Roman Numerals for phase numbers
 roman: true

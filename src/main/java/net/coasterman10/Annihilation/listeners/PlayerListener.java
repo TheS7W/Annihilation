@@ -1,16 +1,16 @@
 /*******************************************************************************
  * Copyright 2014 stuntguy3000 (Luke Anderson) and coasterman10.
- *  
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -31,6 +31,9 @@ import net.coasterman10.Annihilation.object.GameTeam;
 import net.coasterman10.Annihilation.object.Kit;
 import net.coasterman10.Annihilation.object.PlayerMeta;
 import net.coasterman10.Annihilation.stats.StatType;
+import net.minecraft.server.v1_7_R1.EntityPlayer;
+import net.minecraft.server.v1_7_R1.EnumClientCommand;
+import net.minecraft.server.v1_7_R1.PacketPlayInClientCommand;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -39,6 +42,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -54,6 +58,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.server.ServerListPingEvent;
@@ -64,7 +69,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 
 public class PlayerListener implements Listener {
-    private final Annihilation plugin;
+    private Annihilation plugin;
 
     private HashMap<String, Kit> kitsToGive = new HashMap<String, Kit>();
 
@@ -183,46 +188,8 @@ public class PlayerListener implements Listener {
                     String teamName = ChatColor.stripColor(s.getLine(1));
                     GameTeam team = GameTeam.valueOf(teamName.toUpperCase());
                     if (team != null) {
-                        if (pmeta.getTeam() == GameTeam.NONE) {
-
-                            if (Util.isTeamTooBig(team)
-                                    && !player
-                                            .hasPermission("annihilation.team-limit-bypass")) {
-                                player.sendMessage(ChatColor.RED
-                                        + "That team is too big, join another team!");
-                                return;
-                            }
-
-                            if (team.getNexus() != null) {
-                                if (team.getNexus().getHealth() == 0
-                                        && plugin.getPhase() > 1) {
-                                    player.sendMessage(ChatColor.RED
-                                            + "You cannot join a team without a Nexus!");
-                                    return;
-                                }
-                            }
-
-                            if (plugin.getPhase() > plugin.lastJoinPhase
-                                    && !player
-                                            .hasPermission("annhilation.bypass.phaselimiter")) {
-                                player.kickPlayer(ChatColor.RED
-                                        + "You cannot join the game in this phase!");
-                                return;
-                            }
-
-                            pmeta.setTeam(team);
-                            plugin.getScoreboardHandler().teams
-                                    .get(team.name()).addPlayer(player);
-                            player.sendMessage(ChatColor.DARK_AQUA
-                                    + "You joined " + team.coloredName());
-                            if (plugin.getPhase() > 0)
-                                Util.sendPlayerToGame(player, plugin);
-                        } else {
-                            player.sendMessage(ChatColor.DARK_AQUA
-                                    + "You cannot switch teams!");
-                        }
-
-                        plugin.getSignHandler().updateSigns(team);
+                        if (pmeta.getTeam() == GameTeam.NONE)
+                            plugin.joinTeam(e.getPlayer(), teamName);
                     }
                 }
             }
@@ -252,18 +219,38 @@ public class PlayerListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onKick(PlayerKickEvent e) {
+        if (e.getReason().equals(ChatColor.RED + "ANNIHILATION-TRIGGER-KICK-01")) {
+            e.setReason(ChatColor.RED + "You cannot join the game in this phase!");
+            e.setLeaveMessage(null);
+        }
+    }
+
     @SuppressWarnings("deprecation")
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        String prefix = ChatColor.AQUA + "[Annihilation] " + ChatColor.GRAY;
-        Player player = e.getPlayer();
+        String prefix = ChatColor.DARK_AQUA + "[Annihilation] " + ChatColor.GRAY;
+        final Player player = e.getPlayer();
 
         PlayerMeta meta = PlayerMeta.getMeta(player);
 
-        player.sendMessage(ChatColor.GREEN + "Welcome to Annihilation!");
-        player.sendMessage(ChatColor.GRAY
+        if (plugin.getPhase() > plugin.lastJoinPhase
+                && !player.hasPermission("annhilation.bypass.phaselimiter")) {
+            Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+                public void run() {
+                    player.kickPlayer((ChatColor.RED
+                    + "ANNIHILATION-TRIGGER-KICK-01"));
+                }
+            }, 1l);
+            e.setJoinMessage(null);
+            return;
+        }
+
+        player.sendMessage(prefix + ChatColor.GREEN + "Welcome to Annihilation!");
+        player.sendMessage(prefix + ChatColor.GRAY
                 + "Open-source replica by stuntguy3000 and coasterman10");
-        player.sendMessage(ChatColor.GRAY + "Original plugin by xxsaundersxx");
+        player.sendMessage(prefix + ChatColor.GRAY + "Original plugin by xxsaundersxx");
 
         if (player.hasPermission("annihilation.misc.updatenotify")
                 && plugin.updateAvailable) {
@@ -326,7 +313,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
-        Player p = e.getEntity();
+        final Player p = e.getEntity();
 
         if (plugin.getPhase() > 0) {
             PlayerMeta meta = PlayerMeta.getMeta(p);
@@ -353,6 +340,14 @@ public class PlayerListener implements Listener {
             e.setDeathMessage(ChatUtil.formatDeathMessage(p,
                     e.getDeathMessage()));
         e.setDroppedExp(p.getTotalExperience());
+
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            public void run() {
+                PacketPlayInClientCommand in = new PacketPlayInClientCommand(EnumClientCommand.PERFORM_RESPAWN);
+                EntityPlayer cPlayer = ((CraftPlayer) p).getHandle();
+                cPlayer.playerConnection.a(in);
+            }
+        }, 1l);
     }
 
     @EventHandler
@@ -476,7 +471,7 @@ public class PlayerListener implements Listener {
     }
 
     private void breakNexus(final GameTeam victim, Player breaker) {
-        GameTeam attacker = PlayerMeta.getMeta(breaker).getTeam();
+        final GameTeam attacker = PlayerMeta.getMeta(breaker).getTeam();
         if (victim == attacker)
             breaker.sendMessage(ChatColor.DARK_AQUA
                     + "You can't damage your own nexus");
@@ -533,17 +528,26 @@ public class PlayerListener implements Listener {
                 Bukkit.getServer().getPluginManager()
                         .callEvent(new NexusDestroyEvent(breaker, victim));
                 ChatUtil.nexusDestroyed(attacker, victim, breaker);
+
                 plugin.checkWin();
+
                 for (Player p : victim.getPlayers()) {
                     plugin.getStatsManager().incrementStat(StatType.LOSSES, p);
                 }
+
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.getWorld().playSound(player.getLocation(),
                             Sound.EXPLODE, 1F, 1.25F);
                 }
 
-                Util.spawnFirework(nexus, victim.getColor(victim),
-                        victim.getColor(victim));
+                for (final Location spawn : victim.getSpawns()) {
+                    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+                        public void run() {
+                            Util.spawnFirework(spawn, attacker.getColor(attacker), attacker.getColor(attacker));
+                        }
+                    }, new Random().nextInt(20));
+                }
+
                 Util.ParticleEffects.sendToLocation(
                         Util.ParticleEffects.LARGE_EXPLODE, nexus, 1F, 1F, 1F,
                         0, 20);

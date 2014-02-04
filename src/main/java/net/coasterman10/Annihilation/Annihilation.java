@@ -1,16 +1,16 @@
 /*******************************************************************************
  * Copyright 2014 stuntguy3000 (Luke Anderson) and coasterman10.
- *  
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -75,6 +75,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -86,6 +87,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.Team;
+import org.mcstats.Metrics;
 
 public final class Annihilation extends JavaPlugin {
     private ConfigManager configManager;
@@ -110,7 +112,9 @@ public final class Annihilation extends JavaPlugin {
     public int build = 1;
     public int lastJoinPhase = 2;
     public int respawn = 10;
-    
+
+    public String mysqlName = "annihilation";
+
     @Override
     public void onEnable() {
         try {
@@ -214,13 +218,13 @@ public final class Annihilation extends JavaPlugin {
             String pass = config.getString("MySQL.pass");
             db = new DatabaseManager(host, port, name, user, pass, this);
 
-            db.query("CREATE TABLE IF NOT EXISTS `annihilation` ( `username` varchar(16) NOT NULL, "
+            db.query("CREATE TABLE IF NOT EXISTS `" + mysqlName + "` ( `username` varchar(16) NOT NULL, "
                     + "`kills` int(16) NOT NULL, `deaths` int(16) NOT NULL, `wins` int(16) NOT NULL, "
                     + "`losses` int(16) NOT NULL, `nexus_damage` int(16) NOT NULL, "
                     + "UNIQUE KEY `username` (`username`) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;");
         } else
             db = new DatabaseManager(this);
-        
+
         if (getServer().getPluginManager().isPluginEnabled("Vault")) {
             VaultHooks.vault = true;
             if (!VaultHooks.instance().setupPermissions()) {
@@ -362,7 +366,7 @@ public final class Annihilation extends JavaPlugin {
                 }
             }
         }, 0L, 1200L);
-        
+
         getServer().getScheduler().runTaskTimer(this, new Runnable() {
             public void run() {
                 for (GameTeam t : GameTeam.values()) {
@@ -461,7 +465,8 @@ public final class Annihilation extends JavaPlugin {
                 stats.incrementStat(StatType.WINS, p);
         long restartDelay = configManager.getConfig("config.yml").getLong(
                 "restart-delay");
-        new RestartHandler(this, restartDelay).start(timer.getTime());
+        RestartHandler rs = new RestartHandler(this, restartDelay);
+        rs.start(timer.getTime(), winner.getColor(winner));
     }
 
     public void reset() {
@@ -566,5 +571,83 @@ public final class Annihilation extends JavaPlugin {
 
     public PhaseManager getPhaseManager() {
         return timer;
+    }
+
+    public void listTeams(CommandSender sender) {
+        sender.sendMessage(ChatColor.GRAY + "============[ "
+                + ChatColor.DARK_AQUA + "Teams" + ChatColor.GRAY
+                + " ]============");
+        for (GameTeam t : GameTeam.teams()) {
+            int size = 0;
+
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                PlayerMeta meta = PlayerMeta.getMeta(p);
+                if (meta.getTeam() == t)
+                    size++;
+            }
+
+            if (size != 1) {
+                sender.sendMessage(t.coloredName() + " - " + size + " players");
+            } else {
+                sender.sendMessage(t.coloredName() + " - " + size + " player");
+            }
+        }
+        sender.sendMessage(ChatColor.GRAY + "===============================");
+    }
+
+    public void joinTeam(Player player, String team) {
+        PlayerMeta meta = PlayerMeta.getMeta(player);
+        if (meta.getTeam() != GameTeam.NONE && !player.hasPermission("annihilation.bypass.teamlimitor")) {
+            player.sendMessage(ChatColor.DARK_AQUA + "You cannot switch teams!");
+            return;
+        }
+
+        GameTeam target;
+        try {
+            target = GameTeam.valueOf(team.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            player.sendMessage(ChatColor.RED + "\"" + team
+                    + "\" is not a valid team name!");
+            listTeams(player);
+            return;
+        }
+
+        if (Util.isTeamTooBig(target)
+                && !player.hasPermission("annihilation.bypass.teamlimit")) {
+            player.sendMessage(ChatColor.RED
+                    + "That team is too big, join another team!");
+            return;
+        }
+
+        if (target.getNexus() != null) {
+            if (target.getNexus().getHealth() == 0 && getPhase() > 1) {
+                player.sendMessage(ChatColor.RED
+                        + "You cannot join a team without a Nexus!");
+                return;
+            }
+        }
+
+        if (getPhase() > lastJoinPhase
+                && !player.hasPermission("annhilation.bypass.phaselimiter")) {
+            player.kickPlayer(ChatColor.RED
+                    + "You cannot join the game in this phase!");
+            return;
+        }
+
+        player.sendMessage(ChatColor.DARK_AQUA + "You joined "
+                + target.coloredName());
+        meta.setTeam(target);
+
+        getScoreboardHandler().teams.get(team.toUpperCase()).addPlayer(
+                player);
+
+        if (getPhase() > 0) {
+            Util.sendPlayerToGame(player, this);
+        }
+
+        getSignHandler().updateSigns(GameTeam.RED);
+        getSignHandler().updateSigns(GameTeam.BLUE);
+        getSignHandler().updateSigns(GameTeam.GREEN);
+        getSignHandler().updateSigns(GameTeam.YELLOW);
     }
 }
