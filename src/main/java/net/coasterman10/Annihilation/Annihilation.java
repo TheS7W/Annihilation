@@ -112,6 +112,8 @@ public final class Annihilation extends JavaPlugin {
     public int lastJoinPhase = 2;
     public int respawn = 10;
 
+    public String mysqlName = "annihilation";
+
     @Override
     public void onEnable() {
         try {
@@ -215,7 +217,7 @@ public final class Annihilation extends JavaPlugin {
             String pass = config.getString("MySQL.pass");
             db = new DatabaseManager(host, port, name, user, pass, this);
 
-            db.query("CREATE TABLE IF NOT EXISTS `annihilation` ( `username` varchar(16) NOT NULL, "
+            db.query("CREATE TABLE IF NOT EXISTS `" + mysqlName + "` ( `username` varchar(16) NOT NULL, "
                     + "`kills` int(16) NOT NULL, `deaths` int(16) NOT NULL, `wins` int(16) NOT NULL, "
                     + "`losses` int(16) NOT NULL, `nexus_damage` int(16) NOT NULL, "
                     + "UNIQUE KEY `username` (`username`) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;");
@@ -462,7 +464,8 @@ public final class Annihilation extends JavaPlugin {
                 stats.incrementStat(StatType.WINS, p);
         long restartDelay = configManager.getConfig("config.yml").getLong(
                 "restart-delay");
-        new RestartHandler(this, restartDelay).start(timer.getTime());
+        RestartHandler rs = new RestartHandler(this, restartDelay);
+        rs.start(timer.getTime(), winner.getColor(winner));
     }
 
     public void reset() {

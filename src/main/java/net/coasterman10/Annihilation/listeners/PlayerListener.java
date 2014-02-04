@@ -31,6 +31,9 @@ import net.coasterman10.Annihilation.object.GameTeam;
 import net.coasterman10.Annihilation.object.Kit;
 import net.coasterman10.Annihilation.object.PlayerMeta;
 import net.coasterman10.Annihilation.stats.StatType;
+import net.minecraft.server.v1_7_R1.EntityPlayer;
+import net.minecraft.server.v1_7_R1.EnumClientCommand;
+import net.minecraft.server.v1_7_R1.PacketPlayInClientCommand;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -39,6 +42,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -281,10 +285,10 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        player.sendMessage(ChatColor.GREEN + "Welcome to Annihilation!");
-        player.sendMessage(ChatColor.GRAY
+        player.sendMessage(prefix + ChatColor.GREEN + "Welcome to Annihilation!");
+        player.sendMessage(prefix + ChatColor.GRAY
                 + "Open-source replica by stuntguy3000 and coasterman10");
-        player.sendMessage(ChatColor.GRAY + "Original plugin by xxsaundersxx");
+        player.sendMessage(prefix + ChatColor.GRAY + "Original plugin by xxsaundersxx");
 
         if (player.hasPermission("annihilation.misc.updatenotify")
                 && plugin.updateAvailable) {
@@ -347,7 +351,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {
-        Player p = e.getEntity();
+        final Player p = e.getEntity();
 
         if (plugin.getPhase() > 0) {
             PlayerMeta meta = PlayerMeta.getMeta(p);
@@ -374,6 +378,14 @@ public class PlayerListener implements Listener {
             e.setDeathMessage(ChatUtil.formatDeathMessage(p,
                     e.getDeathMessage()));
         e.setDroppedExp(p.getTotalExperience());
+
+        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+            public void run() {
+                PacketPlayInClientCommand in = new PacketPlayInClientCommand(EnumClientCommand.PERFORM_RESPAWN);
+                EntityPlayer cPlayer = ((CraftPlayer) p).getHandle();
+                cPlayer.playerConnection.a(in);
+            }
+        }, 1l);
     }
 
     @EventHandler
@@ -497,7 +509,7 @@ public class PlayerListener implements Listener {
     }
 
     private void breakNexus(final GameTeam victim, Player breaker) {
-        GameTeam attacker = PlayerMeta.getMeta(breaker).getTeam();
+        final GameTeam attacker = PlayerMeta.getMeta(breaker).getTeam();
         if (victim == attacker)
             breaker.sendMessage(ChatColor.DARK_AQUA
                     + "You can't damage your own nexus");
@@ -554,17 +566,26 @@ public class PlayerListener implements Listener {
                 Bukkit.getServer().getPluginManager()
                         .callEvent(new NexusDestroyEvent(breaker, victim));
                 ChatUtil.nexusDestroyed(attacker, victim, breaker);
+
                 plugin.checkWin();
+
                 for (Player p : victim.getPlayers()) {
                     plugin.getStatsManager().incrementStat(StatType.LOSSES, p);
                 }
+
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     player.getWorld().playSound(player.getLocation(),
                             Sound.EXPLODE, 1F, 1.25F);
                 }
 
-                Util.spawnFirework(nexus, victim.getColor(victim),
-                        victim.getColor(victim));
+                for (final Location spawn : victim.getSpawns()) {
+                    Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+                        public void run() {
+                            Util.spawnFirework(spawn, attacker.getColor(attacker), attacker.getColor(attacker));
+                        }
+                    }, new Random().nextInt(20));
+                }
+
                 Util.ParticleEffects.sendToLocation(
                         Util.ParticleEffects.LARGE_EXPLODE, nexus, 1F, 1F, 1F,
                         0, 20);

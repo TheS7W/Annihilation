@@ -1,16 +1,16 @@
 /*******************************************************************************
  * Copyright 2014 stuntguy3000 (Luke Anderson) and coasterman10.
- *  
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -80,6 +80,10 @@ public enum GameTeam {
         return null;
     }
 
+    public List<Location> getSpawns() {
+        return spawns;
+    }
+
     public List<Player> getPlayers() {
         List<Player> players = new ArrayList<Player>();
         for (Player p : Bukkit.getOnlinePlayers())
@@ -95,9 +99,9 @@ public enum GameTeam {
     public Color getColor(GameTeam gt) {
         if (gt == GameTeam.RED) return Color.RED;
         if (gt == GameTeam.BLUE) return Color.BLUE;
-        if (gt == GameTeam.GREEN) return Color.GREEN;
+        if (gt == GameTeam.GREEN) return Color.LIME;
         if (gt == GameTeam.YELLOW) return Color.YELLOW;
-            
+
         return null;
     }
 }
