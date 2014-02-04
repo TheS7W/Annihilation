@@ -1,16 +1,16 @@
 /*******************************************************************************
  * Copyright 2014 stuntguy3000 (Luke Anderson) and coasterman10.
- *  
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -54,6 +54,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.server.ServerListPingEvent;
@@ -64,7 +65,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 
 public class PlayerListener implements Listener {
-    private final Annihilation plugin;
+    private Annihilation plugin;
 
     private HashMap<String, Kit> kitsToGive = new HashMap<String, Kit>();
 
@@ -252,13 +253,33 @@ public class PlayerListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onKick(PlayerKickEvent e) {
+        if (e.getReason().equals(ChatColor.RED + "ANNIHILATION-TRIGGER-KICK-01")) {
+            e.setReason(ChatColor.RED + "You cannot join the game in this phase!");
+            e.setLeaveMessage(null);
+        }
+    }
+
     @SuppressWarnings("deprecation")
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        String prefix = ChatColor.AQUA + "[Annihilation] " + ChatColor.GRAY;
-        Player player = e.getPlayer();
+        String prefix = ChatColor.DARK_AQUA + "[Annihilation] " + ChatColor.GRAY;
+        final Player player = e.getPlayer();
 
         PlayerMeta meta = PlayerMeta.getMeta(player);
+
+        if (plugin.getPhase() > plugin.lastJoinPhase
+                && !player.hasPermission("annhilation.bypass.phaselimiter")) {
+            Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
+                public void run() {
+                    player.kickPlayer((ChatColor.RED
+                    + "ANNIHILATION-TRIGGER-KICK-01"));
+                }
+            }, 1l);
+            e.setJoinMessage(null);
+            return;
+        }
 
         player.sendMessage(ChatColor.GREEN + "Welcome to Annihilation!");
         player.sendMessage(ChatColor.GRAY
