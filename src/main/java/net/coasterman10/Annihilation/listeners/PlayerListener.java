@@ -84,7 +84,7 @@ public class PlayerListener implements Listener {
             String motd = plugin.getConfig().getString("motd");
             try {
                 motd = motd.replaceAll("%PHASE%",
-                        String.valueOf(plugin.getPhase()));
+                        String.valueOf((plugin.getPhase() == 0 ? "Starting" : plugin.getPhase())));
                 motd = motd.replaceAll("%TIME%", plugin.getPhaseManager()
                         .timeString(plugin.getPhaseManager().getTime()));
                 motd = motd.replaceAll("%PLAYERCOUNT",
