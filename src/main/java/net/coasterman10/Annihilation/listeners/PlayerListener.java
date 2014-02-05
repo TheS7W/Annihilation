@@ -221,8 +221,10 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onKick(PlayerKickEvent e) {
-        if (e.getReason().equals(ChatColor.RED + "ANNIHILATION-TRIGGER-KICK-01")) {
-            e.setReason(ChatColor.RED + "You cannot join the game in this phase!");
+        if (e.getReason()
+                .equals(ChatColor.RED + "ANNIHILATION-TRIGGER-KICK-01")) {
+            e.setReason(ChatColor.RED
+                    + "You cannot join the game in this phase!");
             e.setLeaveMessage(null);
         }
     }
@@ -230,7 +232,8 @@ public class PlayerListener implements Listener {
     @SuppressWarnings("deprecation")
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        String prefix = ChatColor.DARK_AQUA + "[Annihilation] " + ChatColor.GRAY;
+        String prefix = ChatColor.DARK_AQUA + "[Annihilation] "
+                + ChatColor.GRAY;
         final Player player = e.getPlayer();
 
         PlayerMeta meta = PlayerMeta.getMeta(player);
@@ -239,18 +242,19 @@ public class PlayerListener implements Listener {
                 && !player.hasPermission("annhilation.bypass.phaselimiter")) {
             Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
                 public void run() {
-                    player.kickPlayer((ChatColor.RED
-                    + "ANNIHILATION-TRIGGER-KICK-01"));
+                    player.kickPlayer((ChatColor.RED + "ANNIHILATION-TRIGGER-KICK-01"));
                 }
             }, 1l);
             e.setJoinMessage(null);
             return;
         }
 
-        player.sendMessage(prefix + ChatColor.GREEN + "Welcome to Annihilation!");
+        player.sendMessage(prefix + ChatColor.GREEN
+                + "Welcome to Annihilation!");
         player.sendMessage(prefix + ChatColor.GRAY
                 + "Open-source replica by stuntguy3000 and coasterman10");
-        player.sendMessage(prefix + ChatColor.GRAY + "Original plugin by xxsaundersxx");
+        player.sendMessage(prefix + ChatColor.GRAY
+                + "Original plugin by xxsaundersxx");
 
         if (player.hasPermission("annihilation.misc.updatenotify")
                 && plugin.updateAvailable) {
@@ -343,7 +347,8 @@ public class PlayerListener implements Listener {
 
         Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
             public void run() {
-                PacketPlayInClientCommand in = new PacketPlayInClientCommand(EnumClientCommand.PERFORM_RESPAWN);
+                PacketPlayInClientCommand in = new PacketPlayInClientCommand(
+                        EnumClientCommand.PERFORM_RESPAWN);
                 EntityPlayer cPlayer = ((CraftPlayer) p).getHandle();
                 cPlayer.playerConnection.a(in);
             }
@@ -412,6 +417,18 @@ public class PlayerListener implements Listener {
         } else {
             if (!e.getPlayer().hasPermission("annihilation.buildbypass"))
                 e.setCancelled(true);
+        }
+
+        if (!e.isCancelled()) {
+            if (e.getBlock().getState() instanceof Sign) {
+                Sign s = (Sign) e.getBlock().getState();
+                if (e.getPlayer().isOp()
+                        || e.getPlayer().hasPermission(
+                                "annihilation.buildbypass")) {
+                    if (s.getLine(0).contains("[Shop]"))
+                        s.setLine(0, ChatColor.DARK_PURPLE + "[Shop]");
+                }
+            }
         }
     }
 
@@ -543,7 +560,9 @@ public class PlayerListener implements Listener {
                 for (final Location spawn : victim.getSpawns()) {
                     Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
                         public void run() {
-                            Util.spawnFirework(spawn, attacker.getColor(attacker), attacker.getColor(attacker));
+                            Util.spawnFirework(spawn,
+                                    attacker.getColor(attacker),
+                                    attacker.getColor(attacker));
                         }
                     }, new Random().nextInt(20));
                 }
