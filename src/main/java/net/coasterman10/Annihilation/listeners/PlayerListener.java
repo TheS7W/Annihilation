@@ -420,13 +420,16 @@ public class PlayerListener implements Listener {
         }
 
         if (!e.isCancelled()) {
-            if (e.getBlock().getState() instanceof Sign) {
+            Material m = e.getBlock().getType();
+            if (m == Material.SIGN_POST || m == Material.WALL_SIGN) {
                 Sign s = (Sign) e.getBlock().getState();
                 if (e.getPlayer().isOp()
                         || e.getPlayer().hasPermission(
                                 "annihilation.buildbypass")) {
-                    if (s.getLine(0).contains("[Shop]"))
+                    if (s.getLine(0).equals("[Shop]")) {
                         s.setLine(0, ChatColor.DARK_PURPLE + "[Shop]");
+                        s.update(true);
+                    }
                 }
             }
         }
