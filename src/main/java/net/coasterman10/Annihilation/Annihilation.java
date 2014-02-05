@@ -19,8 +19,10 @@
 package net.coasterman10.Annihilation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -113,6 +115,9 @@ public final class Annihilation extends JavaPlugin {
     public int lastJoinPhase = 2;
     public int respawn = 10;
 
+    public boolean runCommand = false;
+    public List<String> commands = new ArrayList<String>();
+
     public String mysqlName = "annihilation";
 
     @Override
@@ -146,6 +151,12 @@ public final class Annihilation extends JavaPlugin {
                 "stats.yml");
 
         MapLoader mapLoader = new MapLoader(getLogger(), getDataFolder());
+
+        runCommand = getConfig().contains("commandsToRunAtEndGame");
+
+        if (runCommand) {
+            commands = getConfig().getStringList("commandsToRunAtEndGame");
+        } else commands = null;
 
         maps = new MapManager(this, mapLoader,
                 configManager.getConfig("maps.yml"));
@@ -460,9 +471,11 @@ public final class Annihilation extends JavaPlugin {
         ChatUtil.winMessage(winner);
         timer.stop();
 
-        for (Player p : getServer().getOnlinePlayers())
+        for (Player p : getServer().getOnlinePlayers()) {
             if (PlayerMeta.getMeta(p).getTeam() == winner)
                 stats.incrementStat(StatType.WINS, p);
+        }
+
         long restartDelay = configManager.getConfig("config.yml").getLong(
                 "restart-delay");
         RestartHandler rs = new RestartHandler(this, restartDelay);
