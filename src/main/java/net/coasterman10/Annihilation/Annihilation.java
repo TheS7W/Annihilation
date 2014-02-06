@@ -18,6 +18,8 @@
  ******************************************************************************/
 package net.coasterman10.Annihilation;
 
+import static net.coasterman10.Annihilation.Translation._;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -610,9 +612,9 @@ public final class Annihilation extends JavaPlugin {
             }
 
             if (size != 1) {
-                sender.sendMessage(t.coloredName() + " - " + size + " players");
+                sender.sendMessage(t.coloredName() + " - " + size + " " + _("INFO_TEAM_LIST_PLAYERS") + _("DYNAMIC_S"));
             } else {
-                sender.sendMessage(t.coloredName() + " - " + size + " player");
+                sender.sendMessage(t.coloredName() + " - " + size + " " + _("INFO_TEAM_LIST_PLAYERS"));
             }
         }
         sender.sendMessage(ChatColor.GRAY + "===============================");
@@ -621,7 +623,7 @@ public final class Annihilation extends JavaPlugin {
     public void joinTeam(Player player, String team) {
         PlayerMeta meta = PlayerMeta.getMeta(player);
         if (meta.getTeam() != GameTeam.NONE && !player.hasPermission("annihilation.bypass.teamlimitor")) {
-            player.sendMessage(ChatColor.DARK_AQUA + "You cannot switch teams!");
+            player.sendMessage(ChatColor.DARK_AQUA + _("ERROR_PLAYER_NOSWITCHTEAM"));
             return;
         }
 
@@ -629,23 +631,20 @@ public final class Annihilation extends JavaPlugin {
         try {
             target = GameTeam.valueOf(team.toUpperCase());
         } catch (IllegalArgumentException e) {
-            player.sendMessage(ChatColor.RED + "\"" + team
-                    + "\" is not a valid team name!");
+            player.sendMessage(ChatColor.RED + _("ERROR_GAME_INVALIDTEAM"));
             listTeams(player);
             return;
         }
 
         if (Util.isTeamTooBig(target)
                 && !player.hasPermission("annihilation.bypass.teamlimit")) {
-            player.sendMessage(ChatColor.RED
-                    + "That team is too big, join another team!");
+            player.sendMessage(ChatColor.RED + _("ERROR_GAME_TEAMFULL"));
             return;
         }
 
         if (target.getNexus() != null) {
             if (target.getNexus().getHealth() == 0 && getPhase() > 1) {
-                player.sendMessage(ChatColor.RED
-                        + "You cannot join a team without a Nexus!");
+                player.sendMessage(ChatColor.RED + _("ERROR_GAME_TEAMNONEXUS"));
                 return;
             }
         }
