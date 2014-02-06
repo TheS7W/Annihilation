@@ -1,1 +1,12 @@
 # Annihilation messages file
+ERROR_CONSOLE_CLASSCOMMAND: "Classes pertain only to players"
+ERROR_CONSOLE_PLAYERCOMMAND: "Only players can use this command!"
+ERROR_PLAYER_NOTEAM: "You have to be ingame to use this command!"
+ERROR_GAME_NOTSTARTED: "The game has not started yet!"
+ERROR_PLAYER_NOPERMISSION: "You do not have permission!"
+INFO_CLASS_CHOOSERTITLE: "Select Class"
+INFO_COMMAND_DISTANCE: "Distances"
+INFO_COMMAND_STATS: "Distances"
+INFO_COMMAND_VOTING_ENDED: "Distances"
+INFO_COMMAND_VOTING_INVALID: "Distances"
+INFO_COMMAND_VOTING_MAPS: "Maps up for voting:"
