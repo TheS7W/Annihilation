@@ -18,6 +18,7 @@
  ******************************************************************************/
 package net.coasterman10.Annihilation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,6 +82,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -105,6 +107,9 @@ public final class Annihilation extends JavaPlugin {
     private ScoreboardManager sb;
     private DatabaseManager db;
     private BossManager boss;
+    private Translation translation;
+
+    public static HashMap<String, String> messages = new HashMap<String, String>();
 
     public boolean useMysql = false;
     public boolean updateAvailable = false;
@@ -179,6 +184,12 @@ public final class Annihilation extends JavaPlugin {
         boss = new BossManager(this);
 
         PluginManager pm = getServer().getPluginManager();
+
+        File messagesFile = new File("plugins/" + getDescription().getName() + "/messages.yml");
+        YamlConfiguration yml = YamlConfiguration.loadConfiguration(messagesFile);
+
+        for (String id : yml.getKeys(false))
+            messages.put(id, yml.getString(id));
 
         sign.loadSigns();
 
