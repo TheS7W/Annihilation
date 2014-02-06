@@ -50,6 +50,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -83,8 +84,8 @@ public class PlayerListener implements Listener {
         if (plugin.motd) {
             String motd = plugin.getConfig().getString("motd");
             try {
-                motd = motd.replaceAll("%PHASE%",
-                        String.valueOf((plugin.getPhase() == 0 ? "Starting" : plugin.getPhase())));
+                motd = motd.replaceAll("%PHASE%", String.valueOf((plugin
+                        .getPhase() == 0 ? "Starting" : plugin.getPhase())));
                 motd = motd.replaceAll("%TIME%", plugin.getPhaseManager()
                         .timeString(plugin.getPhaseManager().getTime()));
                 motd = motd.replaceAll("%PLAYERCOUNT",
@@ -251,10 +252,9 @@ public class PlayerListener implements Listener {
 
         player.sendMessage(prefix + ChatColor.GREEN
                 + "Welcome to Annihilation!");
-        player.sendMessage(prefix + ChatColor.GRAY
+        player.sendMessage(ChatColor.GRAY
                 + "Open-source replica by stuntguy3000 and coasterman10");
-        player.sendMessage(prefix + ChatColor.GRAY
-                + "Original plugin by xxsaundersxx");
+        player.sendMessage(ChatColor.GRAY + "Original plugin by xxsaundersxx");
 
         if (player.hasPermission("annihilation.misc.updatenotify")
                 && plugin.updateAvailable) {
@@ -423,20 +423,13 @@ public class PlayerListener implements Listener {
             if (!e.getPlayer().hasPermission("annihilation.buildbypass"))
                 e.setCancelled(true);
         }
+    }
 
-        if (!e.isCancelled()) {
-            Material m = e.getBlock().getType();
-            if (m == Material.SIGN_POST || m == Material.WALL_SIGN) {
-                Sign s = (Sign) e.getBlock().getState();
-                if (e.getPlayer().hasPermission(
-                                "annihilation.buildbypass")) {
-                    if (s.getLine(0).equals("[Shop]")) {
-                        s.setLine(0, ChatColor.DARK_PURPLE + "[Shop]");
-                        s.update(true);
-                    }
-                }
-            }
-        }
+    @EventHandler
+    public void onSignPlace(SignChangeEvent e) {
+        if (e.getPlayer().hasPermission("annihilation.buildbypass"))
+            if (e.getLine(0).toLowerCase().contains("[Shop]".toLowerCase()))
+                e.setLine(0, ChatColor.DARK_PURPLE + "[Shop]");
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -633,7 +626,8 @@ public class PlayerListener implements Listener {
             player.sendMessage(ChatColor.GREEN
                     + "You will recieve this class when you respawn.");
             meta.setKit(Kit.getKit(ChatColor.stripColor(name)));
-            player.sendMessage(ChatColor.DARK_AQUA + "Selected class "+ ChatColor.stripColor(name));
+            player.sendMessage(ChatColor.DARK_AQUA + "Selected class "
+                    + ChatColor.stripColor(name));
         }
     }
 }

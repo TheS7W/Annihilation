@@ -154,7 +154,7 @@ public final class Annihilation extends JavaPlugin {
 
         configManager = new ConfigManager(this);
         configManager.loadConfigFiles("config.yml", "maps.yml", "shops.yml",
-                "stats.yml");
+                "stats.yml", "messages.yml");
 
         MapLoader mapLoader = new MapLoader(getLogger(), getDataFolder());
 
