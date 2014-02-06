@@ -107,7 +107,6 @@ public final class Annihilation extends JavaPlugin {
     private ScoreboardManager sb;
     private DatabaseManager db;
     private BossManager boss;
-    private Translation translation;
 
     public static HashMap<String, String> messages = new HashMap<String, String>();
 
