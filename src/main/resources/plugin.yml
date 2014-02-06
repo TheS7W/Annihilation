@@ -1,7 +1,7 @@
 name: Anni
 main: net.coasterman10.Annihilation.Annihilation
 authors: [coasterman10, stuntguy3000]
-depend: [Vault]
+softdepend: [Vault]
 version: ${project.version}
 commands:
   annihilation:
