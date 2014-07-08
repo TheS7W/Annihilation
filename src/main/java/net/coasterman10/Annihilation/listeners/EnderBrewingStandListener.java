@@ -25,8 +25,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R1.inventory.CraftInventoryBrewer;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftInventoryBrewer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,9 +39,9 @@ import org.bukkit.inventory.InventoryHolder;
 import net.coasterman10.Annihilation.Annihilation;
 import net.coasterman10.Annihilation.object.GameTeam;
 import net.coasterman10.Annihilation.object.PlayerMeta;
-import net.minecraft.server.v1_7_R1.EntityHuman;
-import net.minecraft.server.v1_7_R1.EntityPlayer;
-import net.minecraft.server.v1_7_R1.TileEntityBrewingStand;
+import net.minecraft.server.v1_7_R3.EntityHuman;
+import net.minecraft.server.v1_7_R3.EntityPlayer;
+import net.minecraft.server.v1_7_R3.TileEntityBrewingStand;
 
 public class EnderBrewingStandListener implements Listener {
     private HashMap<GameTeam, Location> locations;
@@ -117,8 +117,8 @@ public class EnderBrewingStandListener implements Listener {
         }
 
         @Override
-        public net.minecraft.server.v1_7_R1.Block q() {
-            return net.minecraft.server.v1_7_R1.Blocks.BREWING_STAND;
+        public net.minecraft.server.v1_7_R3.Block q() {
+            return net.minecraft.server.v1_7_R3.Blocks.BREWING_STAND;
         }
 
         @Override
